@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "../public")));
 
 // API routes (add your API endpoints here)
-app.get("/api/portfolio/profile", (req, res) => {
+app.get("/api/portfolio/profile", (req: Request, res: Response) => {
   res.json({
     success: true,
     message: "Portfolio API is running",
@@ -18,8 +18,8 @@ app.get("/api/portfolio/profile", (req, res) => {
 });
 
 // Catch-all handler: serve React app for all other routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"), (err) => {
+app.get("*", (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"), (err: Error | null) => {
     if (err) {
       res.status(500).send("Error loading page");
     }
@@ -27,12 +27,12 @@ app.get("*", (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Error:", err);
   res.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`📁 Serving static files from dist/public`);
 });
