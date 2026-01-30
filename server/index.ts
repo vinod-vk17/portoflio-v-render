@@ -1,31 +1,40 @@
 import express from "express";
 import path from "path";
-import cors from "cors";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* -------------------- Middleware -------------------- */
-app.use(cors());
-app.use(express.json());
+// Serve static files from the built React app
+app.use(express.static(path.join(__dirname, "../public")));
 
-/* -------------------- API Routes -------------------- */
-// Keep or add your API routes ABOVE the static handler
-// Example:
-// import apiRouter from "./routes";
-// app.use("/api", apiRouter);
-
-/* -------------------- Serve React Frontend -------------------- */
-// Works on Render + local dev (after `client/dist` is built)
-const clientDistPath = path.resolve(process.cwd(), "client", "dist");
-
-app.use(express.static(clientDistPath));
-
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(clientDistPath, "index.html"));
+// API routes (add your API endpoints here)
+app.get("/api/portfolio/profile", (req, res) => {
+  res.json({
+    success: true,
+    message: "Portfolio API is running",
+  });
 });
 
-/* -------------------- Start Server -------------------- */
+// Catch-all handler: serve React app for all other routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"), (err) => {
+    if (err) {
+      res.status(500).send("Error loading page");
+    }
+  });
+});
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`📁 Serving static files from dist/public`);
 });
+
+export default app;
